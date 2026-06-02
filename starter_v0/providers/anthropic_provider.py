@@ -84,5 +84,5 @@ class AnthropicProvider:
             if block_type == "text":
                 text_parts.append(getattr(block, "text", ""))
             elif block_type == "tool_use":
-                calls.append(ToolCall(name=getattr(block, "name"), args=dict(getattr(block, "input", {}) or {})))
+                calls.append(ToolCall(id=getattr(block, "id", f"tu_{len(calls)}"), name=getattr(block, "name"), args=dict(getattr(block, "input", {}) or {})))
         return ModelResponse(text="\n".join(part for part in text_parts if part) or None, tool_calls=calls, raw=resp)

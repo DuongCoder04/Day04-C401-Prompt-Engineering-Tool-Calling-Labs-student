@@ -1,0 +1,156 @@
+[
+  {
+    "id": "R01_user_tweets_routing",
+    "phase": "B",
+    "suite": "base",
+    "case_suite": "base",
+    "is_multiturn": false,
+    "metadata": {
+      "skill": "routing_user_tweets_name_to_handle",
+      "difficulty": "medium",
+      "what_it_tests": "Tin CỦA một người nổi tiếng → map tên Sam Altman thành handle sama rồi gọi get_user_tweets."
+    },
+    "input": "Tweet mới nhất của Sam Altman là gì?",
+    "expect": {
+      "tool_calls": [
+        {
+          "name": "timeline",
+          "args": {
+            "screenname": "sama"
+          }
+        }
+      ]
+    },
+    "result": {
+      "passed": false,
+      "routing_correct": false,
+      "args_correct": false,
+      "actual_tool_calls": [
+        {
+          "name": "clarify",
+          "args": {
+            "question": "Bạn có muốn xem số lượng tweet cụ thể không?",
+            "response_type": "yes_no"
+          }
+        }
+      ],
+      "actual_text": null,
+      "case_failure_type": "wrong_tool",
+      "observed_mismatch": "missing_tool_call",
+      "failure_type": "wrong_tool",
+      "failures": [
+        "missing tool call timeline",
+        "extra tool call clarify"
+      ]
+    },
+    "tool_results": [
+      {
+        "tool": "clarify",
+        "args": {
+          "question": "Bạn có muốn xem số lượng tweet cụ thể không?",
+          "response_type": "yes_no"
+        },
+        "result": {
+          "tool": "ask_user",
+          "question": "Bạn có muốn xem số lượng tweet cụ thể không?",
+          "response_type": "yes_no",
+          "options": [],
+          "awaiting_user": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "M06_switch_tool",
+    "phase": "B",
+    "suite": "base",
+    "case_suite": "base",
+    "is_multiturn": true,
+    "metadata": {
+      "skill": "multiturn_switch_tool",
+      "difficulty": "hard",
+      "what_it_tests": "3 turns: explicitly bỏ Twitter, chuyển sang web_search news, giữ chủ đề OpenAI."
+    },
+    "input": [
+      {
+        "role": "user",
+        "content": "Mọi người nói gì về OpenAI trên Twitter?"
+      },
+      {
+        "role": "user",
+        "content": "Bỏ Twitter, chuyển sang tìm trên web tin tức đi"
+      },
+      {
+        "role": "user",
+        "content": "Giữ chủ đề OpenAI"
+      }
+    ],
+    "expect": {
+      "tool_calls": [
+        {
+          "name": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news"
+          }
+        }
+      ]
+    },
+    "result": {
+      "passed": false,
+      "routing_correct": false,
+      "args_correct": false,
+      "actual_tool_calls": [
+        {
+          "name": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news",
+            "timeframe": "week"
+          }
+        },
+        {
+          "name": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Latest"
+          }
+        }
+      ],
+      "actual_text": null,
+      "case_failure_type": "wrong_tool",
+      "observed_mismatch": "extra_tool_call",
+      "failure_type": "wrong_tool",
+      "failures": [
+        "extra tool call social_search"
+      ]
+    },
+    "tool_results": [
+      {
+        "tool": "lookup",
+        "args": {
+          "query": "OpenAI",
+          "topic": "news",
+          "timeframe": "week"
+        },
+        "result": {
+          "tool": "web_search",
+          "error": "RuntimeError",
+          "message": "Missing TAVILY_API_KEY env var"
+        }
+      },
+      {
+        "tool": "social_search",
+        "args": {
+          "query": "OpenAI",
+          "search_type": "Latest"
+        },
+        "result": {
+          "tool": "search_tweets",
+          "error": "RuntimeError",
+          "message": "Missing RAPIDAPI_KEY env var"
+        }
+      }
+    ]
+  }
+]

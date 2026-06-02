@@ -9,55 +9,55 @@
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
-    description: "Gửi một câu hỏi cho người dùng."
+    description: "Hỏi lại người dùng khi thiếu thông tin bắt buộc (handle, URL, v.v.). Dùng trước khi gọi tool khác nếu chưa có đủ dữ liệu. Với các request gửi/dăng bài, dùng response_type=yes_no để xin xác nhận. QUAN TRỌNG: KHÔNG dùng response_type=choice hoặc options. Chỉ dùng response_type='text' hoặc 'yes_no'."
     parameters:
       type: object
       properties:
-        question: {type: string, default: "", description: "Câu hỏi"}
-        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời"}
-        options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
+        question: {type: string, default: "", description: "Câu hỏi gửi tới người dùng"}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời: text=tự do, yes_no=có/không, choice=chọn từ danh sách"}
+        options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn (chỉ dùng khi response_type=choice)"}
       required: [question]
 
   - name: timeline
-    description: "Lấy các bài đăng gần đây."
+    description: "Lấy bài đăng từ một tài khoản Twitter cụ thể. Dùng khi user yêu cầu tweet/post của một người (VD: 'tweet của Sam Altman'). Map tên người nổi tiếng sang handle: Sam Altman->sama, Elon Musk->elonmusk, Andrej Karpathy->karpathy."
     parameters:
       type: object
       properties:
-        screenname: {type: string, default: "", description: "Tên tài khoản"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        screenname: {type: string, default: "", description: "Twitter handle của tài khoản (VD: sama, elonmusk, karpathy)"}
+        limit: {type: integer, default: 5, description: "Số lượng bài đăng muốn lấy"}
       required: [screenname]
 
   - name: social_search
-    description: "Tìm trên mạng xã hội."
+    description: "Tìm kiếm bài đăng trên Twitter theo chủ đề/từ khóa. Dùng khi user muốn xem 'mọi người đang nói gì về X' hoặc tìm tweet theo từ khóa. Nếu không rõ search_type -> dùng clarify trước. KHÔNG dùng cho tìm kiếm web/lookup thông thường."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Từ khóa"}
-        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Cách sắp xếp"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        query: {type: string, default: "", description: "Từ khóa tìm kiếm"}
+        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Latest=mới nhất, Top=phổ biến nhất. Dùng Top khi user nói 'top'/'phổ biến'"}
+        limit: {type: integer, default: 5, description: "Số lượng kết quả"}
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: "Tìm kiếm thông tin trên web. Dùng cho tin tức và tra cứu tổng hợp. Khi topic=news, đặt query là chủ đề chính xác (VD: 'AI', 'robotics'), KHÔNG thêm từ 'news' vào query."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        query: {type: string, default: "", description: "Truy vấn - đặt đúng chủ đề, không thêm từ 'news'"}
+        topic: {type: string, enum: [general, news], default: "general", description: "general=tra cứu thường, news=tin tức. Luôn set khi user hỏi về tin tức."}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "day=hôm nay/24h, week=tuần này, month=tháng này, year=năm nay"}
         max_results: {type: integer, default: 5, description: "Số kết quả"}
-      required: [query]
+      required: [query, topic]
 
   - name: fetch
-    description: "Lấy nội dung từ một địa chỉ."
+    description: "Đọc nội dung từ một URL cụ thể. Dùng khi user cung cấp link và muốn tóm tắt. KHÔNG dùng khi user không cung cấp URL."
     parameters:
       type: object
       properties:
-        url: {type: string, default: "", description: "Địa chỉ"}
+        url: {type: string, default: "", description: "URL đầy đủ của trang web cần đọc"}
       required: [url]
 
   - name: format
-    description: "Trình bày dữ liệu đã có thành văn bản."
+    description: "Trình bày dữ liệu đã thu thập thành văn bản đẹp (markdown). Chỉ dùng sau khi đã có dữ liệu từ tool khác."
     parameters:
       type: object
       properties:
@@ -79,16 +79,16 @@ tools:
 
   # ---------------- Bonus tools ----------------
   - name: send
-    description: "Gửi một đoạn văn bản đi."
+    description: "Gửi văn bản lên Telegram. CHỈ gọi sau khi user đã xác nhận (confirmed=true). KHÔNG tự ý gửi. Phải dùng clarify với response_type=yes_no trước để hỏi user."
     parameters:
       type: object
       properties:
-        text: {type: string, default: "", description: "Nội dung"}
-        confirmed: {type: boolean, default: false, description: "Cờ xác nhận"}
-      required: [text]
+        text: {type: string, default: "", description: "Nội dung cần gửi"}
+        confirmed: {type: boolean, default: false, description: "Bắt buộc=true sau khi user xác nhận"}
+      required: [text, confirmed]
 
   - name: policy
-    description: "Tìm trong tài liệu nội bộ."
+    description: "Tra cứu chính sách/quy định nội bộ của công ty (ai_research, source_citation, data_privacy, external_publishing, tool_usage). Dùng khi user hỏi về luật lệ, chính sách, quy định nội bộ. KHÔNG dùng lookup/search cho câu hỏi chính sách. QUAN TRỌNG: query=chủ đề cốt lõi (bỏ từ 'chính sách','quy định','về'), KHÔNG chép nguyên câu hỏi. LUÔN set policy_area. Nếu query có '_' → đổi thành ' '. VD: user gõ 'tool_usage' → query='tool usage'."
     parameters:
       type: object
       properties:
@@ -116,3 +116,41 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  # ---------------- New tools ----------------
+  - name: calculate
+    description: "Tính toán biểu thức toán học. Hỗ trợ: +, -, *, /, **, %, sqrt, sin, cos, tan, log, pi, e, floor, ceil, factorial, abs, round. Dùng khi user muốn tính toán."
+    parameters:
+      type: object
+      properties:
+        expression: {type: string, default: "", description: "Biểu thức toán học cần tính (VD: sqrt(144), 2**10, sin(pi/2))"}
+      required: [expression]
+
+  - name: search
+    description: "Tìm kiếm web qua DuckDuckGo. Dùng để tra cứu thông tin bất kỳ trên internet, tin tức, kiến thức. Không cần API key."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa tìm kiếm"}
+        max_results: {type: integer, default: 5, description: "Số kết quả (tối đa 50)"}
+      required: [query]
+
+  - name: music_search
+    description: "Tìm kiếm bài hát / âm nhạc qua iTunes. Dùng khi user muốn tìm nhạc, bài hát, nghệ sĩ, album. Trả về tên bài hát, nghệ sĩ, album, link."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa tìm kiếm nhạc (tên bài hát, nghệ sĩ, album)"}
+        max_results: {type: integer, default: 5, description: "Số kết quả (tối đa 50)"}
+      required: [query]
+
+  - name: story_search
+    description: "Tìm kiếm truyện / sách văn học qua Open Library. CHỈ dùng khi user muốn tìm truyện, tiểu thuyết, sách (VD: 'truyện cổ tích', 'truyện ngắn'). Trả về title, author, năm xuất bản. KHÔNG dùng search (DuckDuckGo) cho yêu cầu tìm truyện/sách. QUAN TRỌNG: giữ nguyên query như người dùng nhập, không sửa dấu tiếng Việt. VD: user gõ 'truyen co tich' -> query='truyen co tich', KHÔNG sửa thành 'truyện cổ tích'."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa tìm kiếm truyện / sách"}
+        max_results: {type: integer, default: 5, description: "Số kết quả (tối đa 50)"}
+      required: [query]
+
+

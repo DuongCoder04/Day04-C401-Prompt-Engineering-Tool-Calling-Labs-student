@@ -118,7 +118,7 @@ class GeminiProvider:
         def append_call(function_call: Any) -> None:
             name = _function_call_name(function_call)
             if name:
-                calls.append(ToolCall(name=name, args=_function_call_args(function_call)))
+                calls.append(ToolCall(id=f"fc_{len(calls)}", name=name, args=_function_call_args(function_call)))
 
         for candidate in getattr(resp, "candidates", []) or []:
             content = getattr(candidate, "content", None)

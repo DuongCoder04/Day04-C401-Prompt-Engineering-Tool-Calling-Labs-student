@@ -17,8 +17,10 @@ from .policy.tool import search_company_policy
 from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
-
-
+from .calculate.tool import calculate
+from .search.tool import search
+from .music_search.tool import music_search
+from .story_search.tool import story_search
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
 # names the model sees AND the names data/eval_base.json + data/eval_research_extension.json
 # match against. If a team renames a tool, it MUST stay in sync across ALL of:
@@ -35,6 +37,10 @@ TOOL_FUNCTIONS = {
     "policy": search_company_policy,
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
+    "calculate": calculate,
+    "search": search,
+    "music_search": music_search,
+    "story_search": story_search,
 }
 
 

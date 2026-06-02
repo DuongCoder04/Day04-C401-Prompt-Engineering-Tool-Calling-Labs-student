@@ -6,6 +6,7 @@ from typing import Any, Protocol
 
 @dataclass
 class ToolCall:
+    id: str
     name: str
     args: dict[str, Any]
 

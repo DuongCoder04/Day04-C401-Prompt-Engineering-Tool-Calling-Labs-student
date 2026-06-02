@@ -55,5 +55,5 @@ class OpenAIProvider:
         calls: list[ToolCall] = []
         for call in msg.tool_calls or []:
             args = json.loads(call.function.arguments or "{}")
-            calls.append(ToolCall(name=call.function.name, args=args))
+            calls.append(ToolCall(id=call.id, name=call.function.name, args=args))
         return ModelResponse(text=msg.content, tool_calls=calls, raw=resp)

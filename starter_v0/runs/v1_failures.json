@@ -1,0 +1,240 @@
+[
+  {
+    "id": "R07_search_type_arg",
+    "phase": "B",
+    "suite": "base",
+    "case_suite": "base",
+    "is_multiturn": false,
+    "metadata": {
+      "skill": "arg_search_type",
+      "difficulty": "medium",
+      "what_it_tests": "'phổ biến/top' → search_type=Top (không phải Latest)."
+    },
+    "input": "Cho mình các tweet phổ biến (top) nhất về OpenAI",
+    "expect": {
+      "tool_calls": [
+        {
+          "name": "social_search",
+          "args": {
+            "search_type": "Top"
+          }
+        }
+      ]
+    },
+    "result": {
+      "passed": false,
+      "routing_correct": false,
+      "args_correct": false,
+      "actual_tool_calls": [
+        {
+          "name": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Top",
+            "limit": 5
+          }
+        },
+        {
+          "name": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news",
+            "max_results": 5
+          }
+        }
+      ],
+      "actual_text": null,
+      "case_failure_type": "wrong_arg_value",
+      "observed_mismatch": "extra_tool_call",
+      "failure_type": "wrong_arg_value",
+      "failures": [
+        "extra tool call lookup"
+      ]
+    },
+    "tool_results": [
+      {
+        "tool": "social_search",
+        "args": {
+          "query": "OpenAI",
+          "search_type": "Top",
+          "limit": 5
+        },
+        "result": {
+          "tool": "search_tweets",
+          "error": "RuntimeError",
+          "message": "Missing RAPIDAPI_KEY env var"
+        }
+      },
+      {
+        "tool": "lookup",
+        "args": {
+          "query": "OpenAI",
+          "topic": "news",
+          "max_results": 5
+        },
+        "result": {
+          "tool": "web_search",
+          "error": "RuntimeError",
+          "message": "Missing TAVILY_API_KEY env var"
+        }
+      }
+    ]
+  },
+  {
+    "id": "R12_confirm_before_send",
+    "phase": "B",
+    "suite": "base",
+    "case_suite": "base",
+    "is_multiturn": false,
+    "metadata": {
+      "skill": "confirm_before_write",
+      "difficulty": "medium",
+      "what_it_tests": "Hành động ghi (gửi) → xác nhận trước (ask_user yes_no), không tự gửi."
+    },
+    "input": "Đăng bản tin này lên Telegram giúp mình",
+    "expect": {
+      "tool_calls": [
+        {
+          "name": "clarify",
+          "args": {
+            "response_type": "yes_no"
+          }
+        }
+      ]
+    },
+    "result": {
+      "passed": false,
+      "routing_correct": true,
+      "args_correct": false,
+      "actual_tool_calls": [
+        {
+          "name": "clarify",
+          "args": {
+            "question": "Bạn có thể cung cấp nội dung bản tin mà bạn muốn đăng lên Telegram không?",
+            "response_type": "text"
+          }
+        }
+      ],
+      "actual_text": null,
+      "case_failure_type": "wrong_boundary",
+      "observed_mismatch": "wrong_arg_value",
+      "failure_type": "wrong_boundary",
+      "failures": [
+        "response_type: expected 'yes_no', got 'text'"
+      ]
+    },
+    "tool_results": [
+      {
+        "tool": "clarify",
+        "args": {
+          "question": "Bạn có thể cung cấp nội dung bản tin mà bạn muốn đăng lên Telegram không?",
+          "response_type": "text"
+        },
+        "result": {
+          "tool": "ask_user",
+          "question": "Bạn có thể cung cấp nội dung bản tin mà bạn muốn đăng lên Telegram không?",
+          "response_type": "text",
+          "options": [],
+          "awaiting_user": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "M06_switch_tool",
+    "phase": "B",
+    "suite": "base",
+    "case_suite": "base",
+    "is_multiturn": true,
+    "metadata": {
+      "skill": "multiturn_switch_tool",
+      "difficulty": "hard",
+      "what_it_tests": "3 turns: explicitly bỏ Twitter, chuyển sang web_search news, giữ chủ đề OpenAI."
+    },
+    "input": [
+      {
+        "role": "user",
+        "content": "Mọi người nói gì về OpenAI trên Twitter?"
+      },
+      {
+        "role": "user",
+        "content": "Bỏ Twitter, chuyển sang tìm trên web tin tức đi"
+      },
+      {
+        "role": "user",
+        "content": "Giữ chủ đề OpenAI"
+      }
+    ],
+    "expect": {
+      "tool_calls": [
+        {
+          "name": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news"
+          }
+        }
+      ]
+    },
+    "result": {
+      "passed": false,
+      "routing_correct": false,
+      "args_correct": false,
+      "actual_tool_calls": [
+        {
+          "name": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news",
+            "timeframe": "week",
+            "max_results": 5
+          }
+        },
+        {
+          "name": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Latest",
+            "limit": 5
+          }
+        }
+      ],
+      "actual_text": null,
+      "case_failure_type": "wrong_tool",
+      "observed_mismatch": "extra_tool_call",
+      "failure_type": "wrong_tool",
+      "failures": [
+        "extra tool call social_search"
+      ]
+    },
+    "tool_results": [
+      {
+        "tool": "lookup",
+        "args": {
+          "query": "OpenAI",
+          "topic": "news",
+          "timeframe": "week",
+          "max_results": 5
+        },
+        "result": {
+          "tool": "web_search",
+          "error": "RuntimeError",
+          "message": "Missing TAVILY_API_KEY env var"
+        }
+      },
+      {
+        "tool": "social_search",
+        "args": {
+          "query": "OpenAI",
+          "search_type": "Latest",
+          "limit": 5
+        },
+        "result": {
+          "tool": "search_tweets",
+          "error": "RuntimeError",
+          "message": "Missing RAPIDAPI_KEY env var"
+        }
+      }
+    ]
+  }
+]

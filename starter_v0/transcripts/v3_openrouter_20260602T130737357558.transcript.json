@@ -1,0 +1,28 @@
+{
+  "transcript_id": "v3_openrouter_20260602T130737357558",
+  "version": "v3",
+  "artifact_version": "v3+p662cb2bcab8a+t73d9565a6dbf",
+  "prompt_hash": "662cb2bcab8ad80dbb4d6b4410cfa0191567cd56e64c31bd25098ea4307ca101",
+  "tools_hash": "73d9565a6dbf63e01453d91c21055ec04edf18fe259b7b7f2b17b354db4a13f0",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "C:\\Users\\Leo\\OneDrive\\Máy tính\\VinUni_AI_Action\\Day4\\Lab4\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "C:\\Users\\Leo\\OneDrive\\Máy tính\\VinUni_AI_Action\\Day4\\Lab4\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student\\starter_v0\\artifacts\\tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-06-02T13:07:37",
+  "updated_at": "2026-06-02T13:07:42",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-06-02T13:07:37",
+      "user": "Tim cho toi tin AI hom nay",
+      "status": "provider_error",
+      "assistant_text": null,
+      "rounds": [],
+      "tool_events": [],
+      "error": "UnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f527' in position 0: character maps to <undefined>",
+      "ended_at": "2026-06-02T13:07:42"
+    }
+  ]
+}

@@ -1,7 +1,419 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
-  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "description": "Team eval cases: test papers, policy, clarify edge cases, out-of-scope history, combined research, and multi-turn scenarios.",
+  "cases": [
+    {
+      "id": "G01_papers_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tim bai bao ve reinforcement learning tren arXiv",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "reinforcement learning"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_papers",
+        "difficulty": "easy",
+        "what_it_tests": "Tim paper -> papers tool."
+      }
+    },
+    {
+      "id": "G02_policy_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Chinh sach cua cong ty ve AI research la gi?",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "policy",
+            "args": {
+              "query": "AI research",
+              "policy_area": "ai_research"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_policy",
+        "difficulty": "medium",
+        "what_it_tests": "Hoi noi bo -> policy tool, khong phai web search."
+      }
+    },
+    {
+      "id": "G03_clarify_search_type",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tweet ve AI",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "clarify_ambiguous_search",
+        "difficulty": "medium",
+        "what_it_tests": "Chi noi tweet ve AI khong ro -> hoi lai."
+      }
+    },
+    {
+      "id": "G04_lookup_and_papers",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tim tin tuc ve AI hom nay va bai bao moi nhat ve transformer",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          },
+          {
+            "name": "papers",
+            "args": {
+              "query": "transformer"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "parallel_lookup_papers",
+        "difficulty": "hard",
+        "what_it_tests": "Can ca tin tuc web + bai bao -> lookup va papers song song."
+      }
+    },
+    {
+      "id": "G05_out_of_scope_history",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tom tat chien tranh the gioi thu 2",
+      "failure_type": "out_of_scope",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "metadata": {
+        "skill": "out_of_scope_history",
+        "difficulty": "easy",
+        "what_it_tests": "Cau hoi lich su ngoai pham vi -> khong goi tool."
+      }
+    },
+    {
+      "id": "G06_multiturn_clarify_then_policy",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Chinh sach su dung tool cua cong ty?"
+        },
+        {
+          "role": "user",
+          "content": "Y toi la tool_usage policy"
+        },
+        {
+          "role": "user",
+          "content": "Doc ky phan ve tool_usage nhe"
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "policy",
+            "args": {
+              "query": "tool usage",
+              "policy_area": "tool_usage"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_clarify_policy",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: lam ro policy_area, goi policy dung area."
+      }
+    },
+    {
+      "id": "G07_multiturn_paper_text",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tim paper ve GPT-4 tren arXiv"
+        },
+        {
+          "role": "user",
+          "content": "Doc full text bai dau tien"
+        },
+        {
+          "role": "user",
+          "content": "Chi lay 3 trang dau thoi"
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "paper_text",
+            "args": {}
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_paper_text",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: tim paper, sau do goi paper_text de doc."
+      }
+    },
+    {
+      "id": "G08_multiturn_timeline_then_format",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tim 3 tweet moi nhat cua Elon Musk"
+        },
+        {
+          "role": "user",
+          "content": "Bay gio trinh bay duoi dang bullet points"
+        },
+        {
+          "role": "user",
+          "content": "Dung template brief"
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "template": "brief"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_timeline_format",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: lay tweet, format bullet, chon template brief."
+      }
+    },
+    {
+      "id": "G09_multiturn_two_accounts",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Lay tweet cua Andrej Karpathy"
+        },
+        {
+          "role": "user",
+          "content": "Lay 7 tweet"
+        },
+        {
+          "role": "user",
+          "content": "Them tweet cua Sam Altman cung voi 5 tweet"
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "sama",
+              "limit": 5
+            }
+          },
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 7
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_two_accounts",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: 1 account thanh 2 account, moi account co limit rieng."
+      }
+    },
+    {
+      "id": "G10_multiturn_switch_from_offtopic",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Giai phuong trinh bac 2: ax^2 + bx + c = 0"
+        },
+        {
+          "role": "user",
+          "content": "Quen di, tim cho toi tin AI hom nay"
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_switch_from_offtopic",
+        "difficulty": "hard",
+        "what_it_tests": "Turn 1 out-of-scope (toan), turn 2 chuyen sang tin AI -> lookup."
+      }
+    },
+    {
+      "id": "G11_calculate_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tinh 2 mu 10",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "calculate",
+            "args": {
+              "expression": "2**10"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_calculate",
+        "difficulty": "easy",
+        "what_it_tests": "Tinh toan -> calculate tool."
+      }
+    },
+    {
+      "id": "G12_search_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tim thong tin ve black holes tren web",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "search",
+            "args": {
+              "query": "black holes"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_search",
+        "difficulty": "easy",
+        "what_it_tests": "Tim kiem web -> search tool."
+      }
+    },
+    {
+      "id": "G13_music_search_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tim bai hat cua Son Tung M-TP",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "music_search",
+            "args": {
+              "query": "Son Tung M-TP"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_music_search",
+        "difficulty": "easy",
+        "what_it_tests": "Tim nhac -> music_search tool."
+      }
+    },
+    {
+      "id": "G14_story_search_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tim truyen co tich Viet Nam",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "story_search",
+            "args": {
+              "query": "truyen co tich Viet Nam"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_story_search",
+        "difficulty": "easy",
+        "what_it_tests": "Tim truyen -> story_search tool."
+      }
+    },
+    {
+      "id": "G15_calculate_and_lookup",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tinh sqrt(144) va tim tin tuc ve AI hom nay",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "calculate",
+            "args": {
+              "expression": "sqrt(144)"
+            }
+          },
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "parallel_calculate_lookup",
+        "difficulty": "hard",
+        "what_it_tests": "Vua tinh toan vua tim tin -> calculate + lookup song song."
+      }
+    }
+
+  ]
 }
