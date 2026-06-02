@@ -17,7 +17,7 @@ def read_url(url: str = "") -> dict[str, Any]:
             "https://api.firecrawl.dev/v1/scrape",
             json={"url": url, "formats": ["markdown"]},
             headers={"Authorization": f"Bearer {key}"},
-            timeout=60,
+            timeout=TIMEOUT,
         )
         response.raise_for_status()
         data = response.json().get("data", {})

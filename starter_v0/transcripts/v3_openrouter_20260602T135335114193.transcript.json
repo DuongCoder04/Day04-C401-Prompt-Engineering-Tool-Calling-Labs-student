@@ -1,0 +1,28 @@
+{
+  "transcript_id": "v3_openrouter_20260602T135335114193",
+  "version": "v3",
+  "artifact_version": "v3+p3acc8a1e97f2+t80cab00026f8",
+  "prompt_hash": "3acc8a1e97f28ca81c04e93b1b913e4ff3cb389edd3d17645a4a5151a2eb6cbd",
+  "tools_hash": "80cab00026f8ccdcf2296f8f0f053e5c974753888172492b0f32ad4fd3e9c185",
+  "provider": "openrouter",
+  "model": "openai/gpt-oss-20b:free",
+  "system_prompt": "/home/duong/VinUni-Lab/Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student/starter_v0/artifacts/system_prompt.md",
+  "tools": "/home/duong/VinUni-Lab/Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student/starter_v0/artifacts/tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-06-02T13:53:35",
+  "updated_at": "2026-06-02T13:56:25",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-06-02T13:53:40",
+      "user": "Xin chào",
+      "status": "provider_error",
+      "assistant_text": null,
+      "rounds": [],
+      "tool_events": [],
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'openai/gpt-oss-20b:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'OpenInference', 'is_byok': False}}, 'user_id': 'user_2yUbiZlTjlxa33h36gfYryT2uFu'}",
+      "ended_at": "2026-06-02T13:53:54"
+    }
+  ]
+}
