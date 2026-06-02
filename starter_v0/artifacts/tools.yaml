@@ -19,12 +19,19 @@ tools:
       required: [question]
 
   - name: timeline
-    description: "Lấy các bài đăng gần đây."
+    description: |
+      Lấy các bài đăng gần đây của MỘT tài khoản cụ thể. Dùng khi user hỏi về tweet/post CỦA một người.
+      screenname phải là Twitter handle (không có @). Mapping tên thường gặp:
+        Sam Altman → sama
+        Elon Musk → elonmusk
+        Andrej Karpathy → karpathy
+        Yann LeCun → ylecun
+        Greg Brockman → gdb
     parameters:
       type: object
       properties:
-        screenname: {type: string, default: "", description: "Tên tài khoản"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        screenname: {type: string, default: "", description: "Twitter handle không có @, ví dụ: sama, elonmusk, karpathy"}
+        limit: {type: integer, default: 5, description: "Số lượng tweet cần lấy"}
       required: [screenname]
 
   - name: social_search
@@ -38,13 +45,21 @@ tools:
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: |
+      Tra cứu thông tin trên internet bằng Tavily. Dùng khi user muốn tìm tin tức hoặc thông tin chung trên web (không phải tweet, không phải URL cụ thể).
+      QUAN TRỌNG — quy tắc viết query:
+        - query phải là keyword ngắn gọn, ví dụ: "AI", "robotics", "OpenAI", "GPT-5"
+        - KHÔNG thêm các từ như "news", "today", "latest", "hôm nay", "tin tức" vào query — những yếu tố đó đã được kiểm soát bởi `topic` và `timeframe`
+        - SAI: "AI news today", "robotics news this week", "tin tức AI hôm nay"
+        - ĐÚNG: "AI", "robotics", "OpenAI"
+      Khi user nói "hôm nay/today" → timeframe=day. "Tuần này/this week" → timeframe=week.
+      Khi user nói "tin tức/news" → topic=news. Mặc định topic=general.
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        query: {type: string, default: "", description: "Keyword ngắn gọn, KHÔNG thêm 'news/today/latest'"}
+        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại: news cho tin thời sự, general cho thông tin chung"}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian: day=hôm nay, week=tuần này"}
         max_results: {type: integer, default: 5, description: "Số kết quả"}
       required: [query]
 
@@ -116,3 +131,43 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  # ---------------- New tools ----------------
+  - name: get_crypto_prices
+    description: |
+      Lấy giá crypto realtime. Dùng khi user hỏi về giá Bitcoin, Ethereum, hoặc bất kỳ coin nào.
+      - symbols: danh sách ký hiệu coin, ví dụ ["BTC", "ETH"]. Để trống để lấy top coins theo rank.
+      - base_currency: tiền tệ (mặc định USD).
+      - limit: số coin cần lấy (mặc định 5).
+    parameters:
+      type: object
+      properties:
+        symbols: {type: array, items: {type: string}, default: [], description: "Danh sách ký hiệu coin, ví dụ ['BTC','ETH']"}
+        base_currency: {type: string, default: "USD", description: "Tiền tệ cơ sở"}
+        limit: {type: integer, default: 5, description: "Số coin cần lấy (tối đa 20)"}
+
+  - name: summarize
+    description: |
+      Tóm tắt một đoạn văn bản dài bằng LLM. Dùng khi đã có nội dung từ fetch/paper_text và muốn rút gọn.
+      - text: văn bản cần tóm tắt.
+      - style: bullet (danh sách), paragraph (đoạn văn), tldr (1-2 câu).
+      - max_words: giới hạn số từ (mặc định 150).
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Văn bản cần tóm tắt"}
+        style: {type: string, enum: [bullet, paragraph, tldr], default: "bullet", description: "Kiểu tóm tắt"}
+        max_words: {type: integer, default: 150, description: "Giới hạn số từ đầu ra"}
+      required: [text]
+
+  - name: check_weather
+    description: |
+      Lấy thông tin thời tiết hiện tại của một thành phố. Không cần API key.
+      - city: tên thành phố (tiếng Anh hoặc tiếng Việt), ví dụ: "Hanoi", "Ho Chi Minh City".
+      - unit: đơn vị nhiệt độ — celsius hoặc fahrenheit (mặc định celsius).
+    parameters:
+      type: object
+      properties:
+        city: {type: string, default: "Hanoi", description: "Tên thành phố"}
+        unit: {type: string, enum: [celsius, fahrenheit], default: "celsius", description: "Đơn vị nhiệt độ"}
+      required: [city]

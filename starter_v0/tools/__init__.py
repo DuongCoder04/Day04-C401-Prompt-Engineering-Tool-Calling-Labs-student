@@ -17,6 +17,9 @@ from .policy.tool import search_company_policy
 from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
+from .crypto_price.tool import get_crypto_price
+from .summarize.tool import summarize_text
+from .weather.tool import get_weather
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -35,6 +38,10 @@ TOOL_FUNCTIONS = {
     "policy": search_company_policy,
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
+    # New tools
+    "get_crypto_prices": get_crypto_price,
+    "summarize": summarize_text,
+    "check_weather": get_weather,
 }
 
 

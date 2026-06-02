@@ -35,11 +35,11 @@ def render_digest(items: list[dict[str, Any]] | None = None, template: str = "se
             parts += [f"**{section}**", *[_bullet(item) for item in section_items], ""]
         markdown = "\n".join(parts)
     else:
-        groups: dict[str, list[dict[str, Any]]] = {}
+        grps2: dict[str, list[dict[str, Any]]] = {}
         for item in items:
-            groups.setdefault(item.get("section", "Tổng hợp"), []).append(item)
+            grps2.setdefault(item.get("section", "Tổng hợp"), []).append(item)
         parts = ([f"# {headline}", ""] if headline else [])
-        for section, section_items in groups.items():
+        for section, section_items in grps2.items():
             parts += [f"## {section}", *[_bullet(item) for item in section_items], ""]
         markdown = "\n".join(parts)
     return {"tool": "render_digest", "template": template, "markdown": markdown, "item_count": len(items)}

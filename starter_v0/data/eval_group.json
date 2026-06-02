@@ -3,5 +3,158 @@
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_topic_tweet_not_timeline",
+      "phase": "B",
+      "query": "Các tweet gần đây về LLM là gì?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "social_search", "args": {"query": "LLM"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "Hỏi tweet về CHỦ ĐỀ (LLM) không phải của người cụ thể → social_search, không phải timeline."}
+    },
+    {
+      "id": "G02_timeframe_month",
+      "phase": "B",
+      "query": "Tin tức AI trong tháng này có gì đáng chú ý?",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "AI", "topic": "news", "timeframe": "month"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "'tháng này' → timeframe=month, không phải week hay day."}
+    },
+    {
+      "id": "G03_fetch_arxiv_full_url",
+      "phase": "B",
+      "query": "Đọc và tóm tắt bài này: https://arxiv.org/abs/2310.06825",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "fetch", "args": {"url": "https://arxiv.org/abs/2310.06825"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "User đưa full URL arxiv → dùng fetch (đọc URL trực tiếp), không phải papers hoặc paper_text. Boundary test: thấy 'arxiv' nhưng có URL đầy đủ thì dùng fetch."}
+    },
+    {
+      "id": "G04_out_of_scope_translation",
+      "phase": "B",
+      "query": "Dịch câu này sang tiếng Anh: 'Trí tuệ nhân tạo đang thay đổi thế giới'",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"difficulty": "medium", "what_it_tests": "Yêu cầu dịch thuật ngoài phạm vi research → KHÔNG gọi tool, từ chối."}
+    },
+    {
+      "id": "G05_unnecessary_tool_trivial",
+      "phase": "B",
+      "query": "Thủ đô của Việt Nam là gì?",
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"difficulty": "medium", "what_it_tests": "Câu hỏi kiến thức phổ thông, agent có thể trả lời trực tiếp → KHÔNG gọi tool lookup."}
+    },
+    {
+      "id": "MG01_carryover_query_switch_tool",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet về Mistral AI"},
+        {"role": "user", "content": "Giờ tìm trên web đi"},
+        {"role": "user", "content": "Vẫn về Mistral AI nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "Mistral AI"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "3 turns: switch từ social_search → lookup, carry query 'Mistral AI' từ turn 1."}
+    },
+    {
+      "id": "MG02_handle_at_correction",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Lấy tweet của @sama"},
+        {"role": "user", "content": "Nhầm, của @ylecun"},
+        {"role": "user", "content": "Lấy 5 tweet mới nhất nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "timeline", "args": {"screenname": "ylecun", "limit": 5}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "3 turns: user dùng @ handle trực tiếp, sửa @sama → @ylecun, carry limit=5 từ latest turn."}
+    },
+    {
+      "id": "MG03_topic_shift_timeframe_carryover",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tin về blockchain tuần này"},
+        {"role": "user", "content": "Thêm web3 vào tìm kiếm"},
+        {"role": "user", "content": "Chỉ tìm web3 thôi, vẫn tuần này"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "web3", "topic": "news", "timeframe": "week"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "3 turns: đổi query blockchain → web3, carry timeframe=week từ turn 1."}
+    },
+    {
+      "id": "MG04_send_confirmed_true",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Gửi bản tin này lên Telegram: 'AI News: GPT-5 ra mắt hôm nay'"},
+        {"role": "user", "content": "Ừ, cứ gửi đi"},
+        {"role": "user", "content": "Gửi luôn đi đừng hỏi nữa"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "send", "args": {"text": "AI News: GPT-5 ra mắt hôm nay", "confirmed": true}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "3 turns: user đã xác nhận bằng lời ('cứ gửi đi') → latest turn agent phải gọi send với confirmed=true, không clarify thêm."}
+    },
+    {
+      "id": "MG05_parallel_then_format",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tin AI trên web và tweet về AI"},
+        {"role": "user", "content": "Ok được rồi"},
+        {"role": "user", "content": "Tổng hợp lại thành digest cho mình nhé"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "format", "args": {"template": "sections"}}]},
+      "metadata": {"difficulty": "medium", "what_it_tests": "3 turns: sau khi đã search (turn 1), latest turn yêu cầu tổng hợp → gọi format, không search lại."}
+    },
+    {
+      "id": "H01_ambiguous_paper_vs_web",
+      "phase": "B",
+      "query": "Tìm bài báo khoa học mới nhất về AI agents trên arXiv",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "papers", "args": {"query": "AI agents"}}]},
+      "metadata": {"difficulty": "hard", "what_it_tests": "Ambiguous: 'bài báo khoa học' + 'arXiv' → phải dùng papers (arxiv_search), không phải lookup. Model hay nhầm sang web search."}
+    },
+    {
+      "id": "H02_missing_two_urls",
+      "phase": "B",
+      "query": "So sánh nội dung 2 bài viết này cho mình",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"difficulty": "hard", "what_it_tests": "Thiếu cả 2 URL ('2 bài viết này' không có link nào) → phải clarify để xin URL, không được đoán."}
+    },
+    {
+      "id": "H03_three_tool_switch",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet về ChatGPT"},
+        {"role": "user", "content": "Giờ tìm tin tức trên web về ChatGPT đi"},
+        {"role": "user", "content": "Tổng hợp kết quả thành bản tin ngắn"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "format", "args": {"template": "brief"}}]},
+      "metadata": {"difficulty": "hard", "what_it_tests": "3 turns: switch tool 3 lần (social_search → lookup → format). Latest turn chỉ cần format, không search lại."}
+    },
+    {
+      "id": "H04_cancel_parallel_keep_one",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm tin AI trên web và tweet về AI"},
+        {"role": "user", "content": "Thôi bỏ tweet đi"},
+        {"role": "user", "content": "Chỉ tìm web thôi, chủ đề AI, hôm nay"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "lookup", "args": {"query": "AI", "topic": "news", "timeframe": "day"}}]},
+      "metadata": {"difficulty": "hard", "what_it_tests": "3 turns: ban đầu parallel 2 tools, user cancel 1 tool (tweet), latest turn chỉ dùng lookup với đúng args."}
+    },
+    {
+      "id": "H05_negative_confirmation_no_send",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Gửi bản tin AI lên Telegram nhé"},
+        {"role": "user", "content": "Thực ra thôi đừng gửi"},
+        {"role": "user", "content": "Hủy đi, không cần gửi nữa"}
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"difficulty": "hard", "what_it_tests": "3 turns: user cancel yêu cầu send → latest turn KHÔNG gọi send hay clarify, chỉ xác nhận đã hủy."}
+    }
+  ]
 }
