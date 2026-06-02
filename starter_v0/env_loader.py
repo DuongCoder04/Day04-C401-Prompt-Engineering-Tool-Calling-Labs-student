@@ -18,9 +18,27 @@ def load_dotenv(path: Path, *, override: bool = True) -> None:
             os.environ[key] = value
 
 
+def _load_streamlit_secrets() -> bool:
+    """Bridge st.secrets → os.environ so existing os.getenv() calls work on Streamlit Cloud."""
+    try:
+        import streamlit as st  # noqa: PLC0415
+        secrets = st.secrets  # type: ignore[attr-defined]
+        for key, value in secrets.items():
+            if isinstance(value, str) and key not in os.environ:
+                os.environ[key] = value
+        return True
+    except Exception:
+        return False
+
+
 def load_lab_env(root: Path) -> None:
+    # 1. Streamlit Cloud secrets take priority when running on Cloud
+    if _load_streamlit_secrets():
+        return
+    # 2. Explicit env file override
     external_path = os.getenv("DAY04_ENV_FILE")
     if external_path:
         load_dotenv(Path(external_path).expanduser())
         return
+    # 3. Local .env file
     load_dotenv(root / ".env")

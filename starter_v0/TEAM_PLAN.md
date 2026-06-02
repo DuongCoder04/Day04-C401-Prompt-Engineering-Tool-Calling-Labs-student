@@ -1,4 +1,4 @@
-# 🔍 Research Agent — Group 42 Showcase
+# 🔍 Research Agent — Zone 10 - Group 3 Showcase
 
 > **VinUni AI20k — Day 04 Lab: Prompt Engineering & Tool Calling**
 
@@ -258,11 +258,9 @@ You: Thời tiết Hà Nội hôm nay?
 | Thành viên | Role |
 |---|---|
 | Nguyen Van Duong | Lead developer, agent architecture |
-| Nguyen Tuan Dung | Prompt engineering, eval analysis |
 | Nguyen Nhat Quang | Tool implementation, testing |
 | Phung Huu Uy | UI/UX, Streamlit frontend |
-| Nguyen Quang Minh | Eval cases design, documentation |
 
 ---
 
-*Group 42 — VinUni AI20k C401 — Day 04 Lab — June 2026*
+*Zone 10 - Group 42 — VinUni AI20k C401 — Day 04 Lab — June 2026*
